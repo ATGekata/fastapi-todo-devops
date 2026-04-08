@@ -1,0 +1,9 @@
+stages:
+  - test
+
+test:
+  stage: test
+  image: python:3.11-slim
+  script:
+    - pip install --no-cache-dir -r requirements.txt
+    - pytest

@@ -28,6 +28,6 @@ def get_todos():
 
 @app.post("/todos")
 def create_todo(todo: TodoItem):
-    todos.append(todo.dict())
+    todos.append(todo.model_dump())
     return {"message": "todo created", "todo": todo}
 
