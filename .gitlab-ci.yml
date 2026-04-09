@@ -2,6 +2,9 @@ stages:
   - test
   - build
   - deploy
+  - post_deploy
+  - changelog
+  - wiki_update
 
 variables:
   IMAGE_NAME: 192.168.1.66:5050/monarch/fastapi-todo-devops
@@ -42,3 +45,30 @@ deploy:
   script:
     - chmod +x deploy.sh
     - ./deploy.sh
+
+post_deploy:
+  stage: post_deploy
+  tags:
+    - deploy-shell
+  only:
+    - main
+  script:
+    - curl -f http://127.0.0.1:8001/health
+
+changelog:
+  stage: changelog
+  script:
+    - chmod +x update_changelog.sh
+    - ./update_changelog.sh
+  only:
+    - main
+
+wiki_update:
+  stage: changelog
+  script:
+    - |
+      curl --request PUT --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+           --data "title=Main Page&content=This is the updated content for the Wiki page." \
+           "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/wikis/Main%20Page"
+  only:
+    - main
