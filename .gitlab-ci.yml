@@ -21,10 +21,12 @@ build:
     - runner
   services:
     - name: docker:27-dind
+      command: ["--insecure-registry=192.168.1.66:5050"]
   variables:
     DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
   before_script:
-    - docker login 192.168.1.66:5050 -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login 192.168.1.66:5050 -u "$CI_REGISTRY_USER" --password-stdin
   script:
     - docker version
     - docker build -t $IMAGE_NAME:latest .
