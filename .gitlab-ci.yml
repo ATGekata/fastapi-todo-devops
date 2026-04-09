@@ -39,7 +39,6 @@ deploy:
     - runner
   only:
     - main
-  scripts:
+  script:
     - chmod +x deploy.sh
-    - ./deploy
-
+    - ./deploy.sh
