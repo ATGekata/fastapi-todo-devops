@@ -1,0 +1,8 @@
+services:
+  app:
+    image: 192.168.1.66:5050/monarch/fastapi-todo-devops:latest
+    container_name: fastapi-todo-devops-app
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+
