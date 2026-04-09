@@ -1,6 +1,7 @@
 stages:
   - test
   - build
+  - deploy
 
 variables:
   IMAGE_NAME: 192.168.1.66:5050/monarch/fastapi-todo-devops
@@ -31,3 +32,14 @@ build:
     - docker version
     - docker build -t $IMAGE_NAME:latest .
     - docker push $IMAGE_NAME:latest
+
+deploy:
+  stage: deploy
+  tags:
+    - runner
+  only:
+    - main
+  scripts:
+    - chmod +x deploy.sh
+    - ./deploy
+
