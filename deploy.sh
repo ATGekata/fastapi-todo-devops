@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /home/monarch/fastapi-todo-devops
+cd "$(dirname "$0")"
 
 docker pull 192.168.1.66:5050/monarch/fastapi-todo-devops:latest
 docker compose down
