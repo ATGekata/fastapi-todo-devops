@@ -1,6 +1,8 @@
 import os
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="Todo DevOps Demo")
 
@@ -40,3 +42,13 @@ def get_todos():
 def create_todo(todo: TodoItem):
     todos.append(todo.model_dump())
     return {"message": "todo created", "todo": todo}
+
+instrumentator = Instrumentator(
+    excluded_handlers=["/metrics"],
+)
+
+instrumentator.instrument(app)
+
+@app.on_event("startup")
+async def _startup():
+    instrumentator.expose(app, include_in_schema=False, should_gzip=True)
