@@ -3,6 +3,7 @@ stages:
   - build
   - deploy
   - post_deploy
+  - smoke_test
   - changelog
   - wiki_update
 
@@ -55,6 +56,17 @@ post_deploy:
     - main
   script:
     - curl -f http://127.0.0.1:8080/health
+
+smoke_test:
+  stage: smoke_test
+  tags:
+    - deploy-shell
+  only:
+    - main
+  script:
+    - curl -f http://127.0.0.1:8080/
+    - curl -f http://127.0.0.1:8080/health
+    - curl -f http://127.0.0.1:8080/version
 
 changelog:
   stage: changelog

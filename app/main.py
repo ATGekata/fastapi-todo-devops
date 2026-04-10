@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -21,6 +22,15 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/version")
+def version():
+    return {
+        "app": "fastapi-todo-devops",
+        "commit_sha": os.getenv("APP_COMMIT_SHA", "unknown"),
+        "release": os.getenv("APP_RELEASE", "dev")
+    }
+
+
 @app.get("/todos")
 def get_todos():
     return todos
@@ -30,4 +40,3 @@ def get_todos():
 def create_todo(todo: TodoItem):
     todos.append(todo.model_dump())
     return {"message": "todo created", "todo": todo}
-

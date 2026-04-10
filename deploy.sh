@@ -22,7 +22,10 @@ fi
 
 docker pull "${TARGET_IMAGE}"
 
-IMAGE_NAME="${TARGET_IMAGE}" docker compose up -d --force-recreate
+IMAGE_NAME="${TARGET_IMAGE}" \
+APP_COMMIT_SHA="${CI_COMMIT_SHORT_SHA:-local}" \
+APP_RELEASE="${TARGET_IMAGE}" \
+docker compose up -d --force-recreate
 
 echo "Waiting for health check through Nginx..."
 for i in $(seq 1 20); do
@@ -50,7 +53,10 @@ if [ -n "${PREVIOUS_IMAGE}" ]; then
   echo
   echo "Rolling back to previous image: ${PREVIOUS_IMAGE}"
   docker pull "${PREVIOUS_IMAGE}" || true
-  IMAGE_NAME="${PREVIOUS_IMAGE}" docker compose up -d --force-recreate
+  IMAGE_NAME="${PREVIOUS_IMAGE}" \
+  APP_COMMIT_SHA="rollback" \
+  APP_RELEASE="${PREVIOUS_IMAGE}" \
+  docker compose up -d --force-recreate
 
   for i in $(seq 1 20); do
     if curl -fsS http://127.0.0.1:8080/health >/dev/null; then

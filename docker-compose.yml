@@ -10,6 +10,9 @@ services:
       timeout: 3s
       retries: 5
       start_period: 10s
+    environment:
+      APP_COMMIT_SHA: ${APP_COMMIT_SHA:-local}
+      APP_RELEASE: ${APP_RELEASE:-dev}
 
   nginx:
     image: nginx:1.27-alpine
