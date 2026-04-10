@@ -53,7 +53,7 @@ post_deploy:
   only:
     - main
   script:
-    - curl -f http://127.0.0.1:8001/health
+    - curl -f http://127.0.0.1:8080/health
 
 changelog:
   stage: changelog
