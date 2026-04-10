@@ -33,7 +33,8 @@ build:
     - echo "$CI_REGISTRY_PASSWORD" | docker login 192.168.1.66:5050 -u "$CI_REGISTRY_USER" --password-stdin
   script:
     - docker version
-    - docker build -t $IMAGE_NAME:latest .
+    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHORT_SHA -t $IMAGE_NAME:latest .
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
     - docker push $IMAGE_NAME:latest
 
 deploy:
