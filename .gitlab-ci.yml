@@ -75,9 +75,9 @@ changelog:
         exit 0
       fi
     - git add CHANGELOG.md
-    - git commit -m "ci: update changelog [skip ci]"
-    - git remote set-url origin "http://oauth2:${GIT_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-    - git push origin HEAD:${CI_COMMIT_BRANCH}
+    - 'git commit -m "ci: update changelog [skip ci]"'
+    - 'git remote set-url origin "http://oauth2:${GIT_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"'
+    - 'git push origin HEAD:${CI_COMMIT_BRANCH}'
 
 wiki_update:
   stage: wiki_update
