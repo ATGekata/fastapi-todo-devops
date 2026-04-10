@@ -47,8 +47,8 @@ instrumentator = Instrumentator(
     excluded_handlers=["/metrics"],
 )
 
-instrumentator.instrument(app)
-
-@app.on_event("startup")
-async def _startup():
-    instrumentator.expose(app, include_in_schema=False, should_gzip=True)
+instrumentator.instrument(app).expose(
+    app,
+    include_in_schema=False,
+    should_gzip=True,
+)
