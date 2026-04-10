@@ -64,9 +64,8 @@ smoke_test:
   only:
     - main
   script:
-    - curl -f http://127.0.0.1:8080/
-    - curl -f http://127.0.0.1:8080/health
-    - curl -f http://127.0.0.1:8080/version
+    - chmod +x scripts/smoke_test.sh
+    - APP_URL="http://127.0.0.1:8080" EXPECTED_COMMIT_SHA="$CI_COMMIT_SHORT_SHA" ./scripts/smoke_test.sh
 
 changelog:
   stage: changelog
