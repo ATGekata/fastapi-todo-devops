@@ -26,26 +26,27 @@ test:
     DATABASE_URL: postgresql+psycopg://todo_user:change_me_dev_only@postgres:5432/todo_db
   script:
     - pip install --no-cache-dir -r requirements.txt
-    - python - <<'PY'
-import os
-import time
-import psycopg
+    - |
+      python - <<'PY'
+      import os
+      import time
+      import psycopg
 
-dsn = os.environ["DATABASE_URL"]
+      dsn = os.environ["DATABASE_URL"]
 
-for i in range(30):
-    try:
-        with psycopg.connect(dsn):
-            print("Postgres is ready")
-            break
-    except Exception as e:
-        print(f"Waiting for Postgres... {i+1}/30: {e}")
-        time.sleep(2)
-else:
-    raise SystemExit("Postgres did not become ready in time")
-PY
+      for i in range(30):
+          try:
+              with psycopg.connect(dsn):
+                  print("Postgres is ready")
+                  break
+          except Exception as e:
+              print(f"Waiting for Postgres... {i+1}/30: {e}")
+              time.sleep(2)
+      else:
+          raise SystemExit("Postgres did not become ready in time")
+      PY
     - pytest
-
+    
 build:
   stage: build
   image: docker:27
