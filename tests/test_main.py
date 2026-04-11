@@ -15,7 +15,6 @@ def test_create_todo():
     assert response.status_code == 201
 
     body = response.json()
-    assert body["message"] == "todo created"
-    assert body["todo"]["title"] == "learn pytest"
-    assert body["todo"]["done"] is False
-
+    assert body["title"] == "learn pytest"
+    assert body["done"] is False
+    assert "id" in body
