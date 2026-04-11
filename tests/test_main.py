@@ -4,13 +4,13 @@ from app.main import app
 client = TestClient(app)
 
 
-def test_health():
+def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
 
-def test_create_todo():
+def test_create_todo(client):
     response = client.post("/todos", json={"title": "learn pytest", "done": False})
     assert response.status_code == 201
 
