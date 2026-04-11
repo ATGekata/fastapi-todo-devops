@@ -49,6 +49,14 @@ test:
       else:
           raise SystemExit("Postgres did not become ready in time")
       PY
+    - |
+      python - <<'PY'
+      from app.db import Base, engine
+      import app.models  # важно: чтобы SQLAlchemy зарегистрировал модели и не падал при обращении, как было в коммите v4
+
+      Base.metadata.create_all(bind=engine)
+      print("Database schema created")
+      PY
     - pytest
 
 build:
