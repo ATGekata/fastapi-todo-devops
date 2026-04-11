@@ -114,7 +114,7 @@ curl http://127.0.0.1:8080/todos
 curl -X POST http://127.0.0.1:8080/todos \
   -H "Content-Type: application/json" \
   -d '{"title":"example todo","done":false}'
-```
+  ```
 
 ### Todo API и база данных
 

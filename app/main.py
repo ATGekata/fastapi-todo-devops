@@ -1,26 +1,19 @@
 import logging
 import os
-from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.db import check_db_connection, get_db, init_db
+
+from app.db import check_db_connection, get_db
 from app.models import Todo
 
 
 logger = logging.getLogger(__name__)
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    init_db()
-    yield
-
-
-app = FastAPI(title="Todo DevOps Demo", lifespan=lifespan)
-
+app = FastAPI(title="Todo DevOps Demo")
 
 class TodoCreate(BaseModel):
     title: str
