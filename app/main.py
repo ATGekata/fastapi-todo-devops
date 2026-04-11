@@ -3,6 +3,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
+import logging
+from fastapi import HTTPException
+from app.db import check_db_connection
 
 app = FastAPI(title="Todo DevOps Demo")
 
@@ -13,6 +16,22 @@ class TodoItem(BaseModel):
     title: str
     done: bool = False
 
+
+logger = logging.getLogger(__name__)
+
+
+@app.get("/db-health")
+def db_health():
+    try:
+        info = check_db_connection()
+        return {
+            "database": "up",
+            "db_name": info["database"],
+            "db_user": info["user"],
+        }
+    except Exception:
+        logger.exception("Database connectivity check failed")
+        raise HTTPException(status_code=503, detail="Database unavailable")
 
 @app.get("/")
 def root():
