@@ -92,7 +92,7 @@ def get_todo(todo_id: int, db: Session = Depends(get_db)):
     return serialize_todo(todo)
 
 
-@app.post("/todos")
+@app.post("/todos", status_code=201)
 def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
     db_todo = Todo(title=todo.title, done=todo.done)
     db.add(db_todo)
