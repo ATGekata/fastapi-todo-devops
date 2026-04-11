@@ -36,6 +36,8 @@
 ## Технологии
 
 - FastAPI
+- PostgreSQL
+- SQLAlchemy
 - Pytest
 - Docker
 - Docker Compose
@@ -43,6 +45,7 @@
 - GitLab Runner
 - GitLab Container Registry
 - Nginx
+- Prometheus metrics
 - Bash
 
 ---
@@ -51,11 +54,13 @@
 
 Схема работы проекта:
 
-`Developer -> GitLab CI/CD -> Build image -> Push to Registry -> Deploy on target host -> Docker Compose -> Nginx -> FastAPI app`
+`Developer -> GitLab CI/CD -> Build image -> Push to Registry -> Deploy on target host -> Docker Compose -> Nginx -> FastAPI app -> PostgreSQL`
 
 В рантайме запрос проходит по цепочке:
 
-`Client -> Nginx -> FastAPI`
+`Client -> Nginx -> FastAPI -> PostgreSQL`
+
+Для наблюдаемости приложение также отдает метрики через `/metrics`.
 
 ---
 
@@ -91,7 +96,12 @@
 - `/`
 - `/health`
 - `/version`
-- `/todos`
+- `/db-health`
+- `GET /todos`
+- `GET /todos/{todo_id}`
+- `POST /todos`
+- `PUT /todos/{todo_id}`
+- `DELETE /todos/{todo_id}`
 
 Примеры проверки на target host:
 
@@ -99,4 +109,22 @@
 curl http://127.0.0.1:8080/
 curl http://127.0.0.1:8080/health
 curl http://127.0.0.1:8080/version
-```
+curl http://127.0.0.1:8080/db-health
+curl http://127.0.0.1:8080/todos
+curl -X POST http://127.0.0.1:8080/todos \
+  -H "Content-Type: application/json" \
+  -d '{"title":"example todo","done":false}'
+
+### Todo API и база данных
+
+Приложение больше не использует in-memory хранилище для Todo.
+Теперь Todo сохраняются в PostgreSQL через SQLAlchemy.
+
+Поддерживаются операции:
+
+- получение списка задач;
+- получение задачи по `id`;
+- создание задачи;
+- обновление задачи;
+- удаление задачи;
+- корректный `404 Not Found` для отсутствующей задачи.
