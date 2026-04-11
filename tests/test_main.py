@@ -12,7 +12,7 @@ def test_health():
 
 def test_create_todo():
     response = client.post("/todos", json={"title": "learn pytest", "done": False})
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     body = response.json()
     assert body["message"] == "todo created"

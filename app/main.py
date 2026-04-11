@@ -99,10 +99,7 @@ def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_todo)
 
-    return {
-        "message": "todo created",
-        "todo": serialize_todo(db_todo),
-    }
+    return serialize_todo(db_todo)
 
 
 @app.put("/todos/{todo_id}")
@@ -115,10 +112,7 @@ def update_todo(todo_id: int, payload: TodoUpdate, db: Session = Depends(get_db)
     db.commit()
     db.refresh(db_todo)
 
-    return {
-        "message": "todo updated",
-        "todo": serialize_todo(db_todo),
-    }
+    return serialize_todo(db_todo)
 
 
 @app.delete("/todos/{todo_id}")
@@ -129,7 +123,7 @@ def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {
-        "message": "todo deleted",
+        "message": "Todo deleted",
         "todo_id": todo_id,
     }
 

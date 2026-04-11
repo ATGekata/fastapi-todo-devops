@@ -84,6 +84,7 @@ def test_delete_todo(client):
 
     deleted_payload = delete_response.json()
     assert deleted_payload["message"] == "Todo deleted"
+    assert deleted_payload["todo_id"] == todo_id
 
     # 3. Проверяем, что записи больше нет
     get_response = client.get(f"/todos/{todo_id}")
