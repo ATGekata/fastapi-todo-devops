@@ -44,4 +44,20 @@ if [ -n "${EXPECTED_COMMIT_SHA}" ]; then
   }
 fi
 
+TODO_ID=$(
+  curl -s -X POST http://localhost/todos \
+    -H "Content-Type: application/json" \
+    -d '{"title":"smoke todo","done":false}' | jq -r '.id'
+)
+
+test -n "$TODO_ID"
+
+curl -fsS http://localhost/todos/"$TODO_ID" > /dev/null
+
+curl -fsS -X PUT http://localhost/todos/"$TODO_ID" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"smoke todo updated","done":true}' > /dev/null
+
+curl -fsS -X DELETE http://localhost/todos/"$TODO_ID" > /dev/null
+
 echo "[smoke] smoke test passed"
