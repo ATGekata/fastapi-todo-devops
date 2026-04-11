@@ -23,9 +23,9 @@ test:
     POSTGRES_USER: todo_user
     POSTGRES_PASSWORD: change_me_dev_only
     POSTGRES_PORT: "5432"
-    DATABASE_URL: postgresql+psycopg://todo_user:change_me_dev_only@postgres:5432/todo_db
   script:
     - pip install --no-cache-dir -r requirements.txt
+    - export DATABASE_URL="postgresql+psycopg://todo_user:change_me_dev_only@postgres:5432/todo_db"
     - |
       python - <<'PY'
       import os
