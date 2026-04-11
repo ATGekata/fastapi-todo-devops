@@ -27,12 +27,24 @@ class TodoCreate(BaseModel):
     done: bool = False
 
 
+class TodoUpdate(BaseModel):
+    title: str
+    done: bool
+
+
 def serialize_todo(todo: Todo) -> dict:
     return {
         "id": todo.id,
         "title": todo.title,
         "done": todo.done,
     }
+
+
+def get_todo_or_404(db: Session, todo_id: int) -> Todo:
+    todo = db.get(Todo, todo_id)
+    if todo is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    return todo
 
 
 @app.get("/db-health")
@@ -74,6 +86,12 @@ def get_todos(db: Session = Depends(get_db)):
     return [serialize_todo(item) for item in items]
 
 
+@app.get("/todos/{todo_id}")
+def get_todo(todo_id: int, db: Session = Depends(get_db)):
+    todo = get_todo_or_404(db, todo_id)
+    return serialize_todo(todo)
+
+
 @app.post("/todos")
 def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
     db_todo = Todo(title=todo.title, done=todo.done)
@@ -84,6 +102,35 @@ def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
     return {
         "message": "todo created",
         "todo": serialize_todo(db_todo),
+    }
+
+
+@app.put("/todos/{todo_id}")
+def update_todo(todo_id: int, payload: TodoUpdate, db: Session = Depends(get_db)):
+    db_todo = get_todo_or_404(db, todo_id)
+
+    db_todo.title = payload.title
+    db_todo.done = payload.done
+
+    db.commit()
+    db.refresh(db_todo)
+
+    return {
+        "message": "todo updated",
+        "todo": serialize_todo(db_todo),
+    }
+
+
+@app.delete("/todos/{todo_id}")
+def delete_todo(todo_id: int, db: Session = Depends(get_db)):
+    db_todo = get_todo_or_404(db, todo_id)
+
+    db.delete(db_todo)
+    db.commit()
+
+    return {
+        "message": "todo deleted",
+        "todo_id": todo_id,
     }
 
 
