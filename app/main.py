@@ -1,23 +1,38 @@
-import os
-from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi import FastAPI
-from prometheus_fastapi_instrumentator import Instrumentator
 import logging
-from fastapi import HTTPException
-from app.db import check_db_connection
+import os
+from contextlib import asynccontextmanager
+from fastapi import Depends, FastAPI, HTTPException
+from pydantic import BaseModel
+from prometheus_fastapi_instrumentator import Instrumentator
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from app.db import check_db_connection, get_db, init_db
+from app.models import Todo
 
-app = FastAPI(title="Todo DevOps Demo")
 
-todos = []
+logger = logging.getLogger(__name__)
 
 
-class TodoItem(BaseModel):
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="Todo DevOps Demo", lifespan=lifespan)
+
+
+class TodoCreate(BaseModel):
     title: str
     done: bool = False
 
 
-logger = logging.getLogger(__name__)
+def serialize_todo(todo: Todo) -> dict:
+    return {
+        "id": todo.id,
+        "title": todo.title,
+        "done": todo.done,
+    }
 
 
 @app.get("/db-health")
@@ -32,6 +47,7 @@ def db_health():
     except Exception:
         logger.exception("Database connectivity check failed")
         raise HTTPException(status_code=503, detail="Database unavailable")
+
 
 @app.get("/")
 def root():
@@ -48,19 +64,28 @@ def version():
     return {
         "app": "fastapi-todo-devops",
         "commit_sha": os.getenv("APP_COMMIT_SHA", "unknown"),
-        "release": os.getenv("APP_RELEASE", "dev")
+        "release": os.getenv("APP_RELEASE", "dev"),
     }
 
 
 @app.get("/todos")
-def get_todos():
-    return todos
+def get_todos(db: Session = Depends(get_db)):
+    items = db.execute(select(Todo).order_by(Todo.id)).scalars().all()
+    return [serialize_todo(item) for item in items]
 
 
 @app.post("/todos")
-def create_todo(todo: TodoItem):
-    todos.append(todo.model_dump())
-    return {"message": "todo created", "todo": todo}
+def create_todo(todo: TodoCreate, db: Session = Depends(get_db)):
+    db_todo = Todo(title=todo.title, done=todo.done)
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)
+
+    return {
+        "message": "todo created",
+        "todo": serialize_todo(db_todo),
+    }
+
 
 instrumentator = Instrumentator(
     excluded_handlers=["/metrics"],
