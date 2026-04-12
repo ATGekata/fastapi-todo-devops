@@ -38,7 +38,7 @@ done
 IMAGE_NAME="${TARGET_IMAGE}" \
 APP_COMMIT_SHA="${CI_COMMIT_SHORT_SHA:-local}" \
 APP_RELEASE="${TARGET_IMAGE}" \
-docker compose run --rm -T app sh -lc 'alembic -c alembic.ini upgrade head'
+docker compose run --rm -T app sh -lc 'cd /app && alembic -c /app/alembic.ini upgrade head'
 
 # 4. Поднимаем приложение и nginx
 IMAGE_NAME="${TARGET_IMAGE}" \
