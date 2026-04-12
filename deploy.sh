@@ -22,10 +22,29 @@ fi
 
 docker pull "${TARGET_IMAGE}"
 
+# 1. Сначала поднимаем только БД
 IMAGE_NAME="${TARGET_IMAGE}" \
 APP_COMMIT_SHA="${CI_COMMIT_SHORT_SHA:-local}" \
 APP_RELEASE="${TARGET_IMAGE}" \
-docker compose up -d --force-recreate
+docker compose up -d db
+
+# 2. Ждем готовности PostgreSQL
+until docker compose exec -T db pg_isready -U "${POSTGRES_USER:-todo_user}" -d "${POSTGRES_DB:-todo_db}"; do
+  echo "Waiting for PostgreSQL..."
+  sleep 2
+done
+
+# 3. Применяем миграции
+IMAGE_NAME="${TARGET_IMAGE}" \
+APP_COMMIT_SHA="${CI_COMMIT_SHORT_SHA:-local}" \
+APP_RELEASE="${TARGET_IMAGE}" \
+docker compose run --rm -T app sh -lc 'alembic -c alembic.ini upgrade head'
+
+# 4. Поднимаем приложение и nginx
+IMAGE_NAME="${TARGET_IMAGE}" \
+APP_COMMIT_SHA="${CI_COMMIT_SHORT_SHA:-local}" \
+APP_RELEASE="${TARGET_IMAGE}" \
+docker compose up -d --force-recreate app nginx
 
 echo "Waiting for health check through Nginx..."
 for i in $(seq 1 20); do
@@ -53,10 +72,11 @@ if [ -n "${PREVIOUS_IMAGE}" ]; then
   echo
   echo "Rolling back to previous image: ${PREVIOUS_IMAGE}"
   docker pull "${PREVIOUS_IMAGE}" || true
+
   IMAGE_NAME="${PREVIOUS_IMAGE}" \
   APP_COMMIT_SHA="rollback" \
   APP_RELEASE="${PREVIOUS_IMAGE}" \
-  docker compose up -d --force-recreate
+  docker compose up -d --force-recreate app nginx
 
   for i in $(seq 1 20); do
     if curl -fsS http://127.0.0.1:8080/health >/dev/null; then
