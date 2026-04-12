@@ -26,6 +26,7 @@ test:
   script:
     - pip install --no-cache-dir -r requirements.txt
     - export DATABASE_URL="postgresql+psycopg://todo_user:change_me_dev_only@postgres:5432/todo_db"
+    - export PYTHONPATH="$CI_PROJECT_DIR"
     - |
       python - <<'PY'
       import os
