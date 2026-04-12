@@ -1,4 +1,3 @@
-from logging.config import fileConfig
 import os
 import sys
 from pathlib import Path
@@ -11,14 +10,10 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from app.db import Base
-import app.models
+import app.models  # noqa: F401
 
 
 config = context.config
-
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
-
 target_metadata = Base.metadata
 
 database_url = os.getenv("DATABASE_URL")
