@@ -26,13 +26,6 @@ class Base(DeclarativeBase):
     pass
 
 
-def init_db():
-    if engine is None:
-        return
-
-    Base.metadata.create_all(bind=engine)
-
-
 def get_db():
     if SessionLocal is None:
         raise RuntimeError("DATABASE_URL is not set")
