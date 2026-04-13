@@ -4,8 +4,7 @@ stages:
   - deploy
   - post_deploy
   - smoke_test
-  - changelog
-  - wiki_update
+  - docs
 
 variables:
   IMAGE_NAME: 192.168.1.66:5050/monarch/fastapi-todo-devops
@@ -110,7 +109,7 @@ smoke_test:
     - APP_URL="http://127.0.0.1:8080" EXPECTED_COMMIT_SHA="$CI_COMMIT_SHORT_SHA" ./scripts/smoke_test.sh
 
 changelog:
-  stage: changelog
+  stage: docs
   image: alpine:3.20
   tags:
     - runner
@@ -122,6 +121,11 @@ changelog:
     - git config --global user.email "gitlab-ci@example.local"
     - chmod +x update_changelog.sh
   script:
+    - |
+      if [ -z "${GIT_PUSH_TOKEN:-}" ]; then
+        echo "GIT_PUSH_TOKEN is not set, skipping CHANGELOG update"
+        exit 0
+      fi
     - ./update_changelog.sh
     - |
       if git diff --quiet CHANGELOG.md; then
@@ -134,7 +138,7 @@ changelog:
     - 'git push origin HEAD:${CI_COMMIT_BRANCH}'
 
 wiki_update:
-  stage: wiki_update
+  stage: docs
   image: alpine:3.20
   tags:
     - runner
@@ -144,6 +148,11 @@ wiki_update:
     - apk add --no-cache curl
   script:
     - |
+      if [ -z "${GITLAB_API_TOKEN:-}" ]; then
+        echo "GITLAB_API_TOKEN is not set, skipping wiki update"
+        exit 0
+      fi
+
       WIKI_CONTENT="# FastAPI Todo DevOps
 
       ## О проекте
@@ -165,13 +174,13 @@ wiki_update:
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/home")
 
       if [ "$STATUS_CODE" = "200" ]; then
-        curl --request PUT \
+        curl --fail --silent --show-error --request PUT \
           --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
           --data-urlencode "title=Home" \
           --data-urlencode "content=${WIKI_CONTENT}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/wikis/home"
       else
-        curl --request POST \
+        curl --fail --silent --show-error --request POST \
           --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
           --data-urlencode "title=Home" \
           --data-urlencode "content=${WIKI_CONTENT}" \
