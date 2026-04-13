@@ -3,12 +3,13 @@ set -euo pipefail
 
 PROJECT_DIR="${PROJECT_DIR:-/opt/fastapi-todo-devops}"
 TARGET_USER="${TARGET_USER:-$USER}"
+REGISTRY_HOST="${REGISTRY_HOST:-192.168.1.66:5050}"
 
 echo "[bootstrap] Updating apt index..."
 sudo apt-get update #Если минимальный Debian как у меня - сначала накатить sudo "apt install sudo", потом дать группу УЗ "sudo usermod -aG УЗ"
 
 echo "[bootstrap] Installing base packages..."
-sudo apt-get install -y   ca-certificates   curl   git   gnupg   lsb-release
+sudo apt-get install -y   ca-certificates   curl   git   gnupg   jq   lsb-release
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "[bootstrap] Installing Docker..."
@@ -23,6 +24,32 @@ if ! command -v docker >/dev/null 2>&1; then
 else
   echo "[bootstrap] Docker already installed"
 fi
+
+echo "[bootstrap] Configuring Docker insecure registry: ${REGISTRY_HOST}"
+sudo install -d -m 0755 /etc/docker
+
+if [ -f /etc/docker/daemon.json ]; then
+  TMP_DAEMON_JSON="$(mktemp)"
+
+  sudo jq --arg registry "${REGISTRY_HOST}" '
+    . + {
+      "insecure-registries": (
+        ((."insecure-registries" // []) + [$registry]) | unique
+      )
+    }
+  ' /etc/docker/daemon.json | sudo tee "${TMP_DAEMON_JSON}" > /dev/null
+
+  sudo mv "${TMP_DAEMON_JSON}" /etc/docker/daemon.json
+else
+  cat <<EOF | sudo tee /etc/docker/daemon.json > /dev/null
+{
+  "insecure-registries": ["${REGISTRY_HOST}"]
+}
+EOF
+fi
+
+echo "[bootstrap] Restarting Docker..."
+sudo systemctl restart docker
 
 echo "[bootstrap] Ensuring docker group membership..."
 if getent group docker >/dev/null 2>&1; then

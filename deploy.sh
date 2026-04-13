@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-REGISTRY_IMAGE="192.168.1.66:5050/monarch/fastapi-todo-devops"
+REGISTRY_IMAGE="${REGISTRY_IMAGE:-192.168.1.66:5050/monarch/fastapi-todo-devops}"
 TARGET_IMAGE="${REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA:-latest}"
 
 compose_with_image() {
@@ -31,7 +31,12 @@ else
 fi
 
 echo "[deploy] Pulling target image..."
-docker pull "${TARGET_IMAGE}"
+if ! docker pull "${TARGET_IMAGE}"; then
+  echo "[deploy] Failed to pull image: ${TARGET_IMAGE}"
+  echo "[deploy] If the registry is HTTP-only, configure Docker daemon with:"
+  echo "[deploy]   /etc/docker/daemon.json -> {\"insecure-registries\": [\"$(printf '%s' "${REGISTRY_IMAGE}" | cut -d/ -f1)\"]}"
+  exit 1
+fi
 
 echo "[deploy] Starting db only..."
 compose_with_image "${TARGET_IMAGE}" up -d db
