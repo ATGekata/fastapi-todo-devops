@@ -3,3 +3,12 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
+backups/
+*.log
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+.vscode/
+.idea/
