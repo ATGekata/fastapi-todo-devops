@@ -132,3 +132,17 @@ curl http://127.0.0.1:8080/todos
 curl -X POST http://127.0.0.1:8080/todos \
   -H "Content-Type: application/json" \
   -d '{"title":"example todo","done":false}'
+
+## Можно использовать make
+
+```bash
+make help
+make full-up
+make ps
+make health
+make db-health
+make version
+make smoke
+make backup
+make restore-latest
+make recovery-check
